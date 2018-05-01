@@ -1,35 +1,49 @@
 library(readxl)
 library(ggplot2)
+library(xlsx)
 
-temp_list <- list()
+list_sample <- list()
 for(i in 1:30) {
   dataset_path <- paste0(getwd(),'/data_set/',i,"_04_mqtt.xlsx")
-  temp_list[[paste0("day_",i,sep="")]] <- read_excel(dataset_path,sheet = "groupvalue",col_names = FALSE)
-  if(i>1){
-    temp_list[[i]][1] <- NULL
-  }
+  list_sample[[paste0("day_",i,sep="")]] <- read_excel(dataset_path,sheet = "groupvalue",col_names = FALSE)
+  list_sample[[i]][1] <- NULL
 }
-df_sample <- as.data.frame(temp_list)
+df_sample <- as.data.frame(list_sample)
 
 for(i in 1:ncol(df_sample)){
-  ifelse(i==1,colnames(df_sample)[i] <- "interval", colnames(df_sample)[i] <- (paste0('day_',i-1)))
+  colnames(df_sample)[i] <- (paste0('day_',i))
 }
 
-ggplot(df_sample,aes(x=df_sample$day_10)) + 
+
+list_descriptive_statistics_sample <- list()
+for(i in 1:length(list_sample)){
+    list_descriptive_statistics_sample[[paste0("day_",i,sep="")]] <- ""
+    list_descriptive_statistics_sample[[paste0("day_",i,sep="")]][1] <- (mean(as.numeric(unlist(list_sample[[i]]))))
+    list_descriptive_statistics_sample[[paste0("day_",i,sep="")]][2] <- (sd(as.numeric(unlist(list_sample[[i]]))))
+    list_descriptive_statistics_sample[[paste0("day_",i,sep="")]][3] <- (min(as.numeric(unlist(list_sample[[i]]))))
+    list_descriptive_statistics_sample[[paste0("day_",i,sep="")]][4] <- (max(as.numeric(unlist(list_sample[[i]]))))
+}
+
+df_descriptive_statistics_sample <- as.data.frame(list_descriptive_statistics_sample)
+
+
+ggplot(df_sample,aes(x=df_sample[,5])) + 
   geom_density(fill='white')
 
 
-for (i in 1:29){
-  if(i==1){
-  x <- as.numeric(unlist(temp_list[[i]][2]))
-  y <- as.numeric(unlist(temp_list[[i+1]]))
- print(wilcox.test(x,y, paired = TRUE))
-  }
-  else {
-    x <- as.numeric(unlist(temp_list[[i]]))
-    y <- as.numeric(unlist(temp_list[[i+1]]))
+x <- data.frame()
+for(i in 1:ncol(df_sample)){
+x <- rbind(x, data.frame(v=as.vector(unlist(list_sample[[i]])), type=paste0('day_',i)))
+}
+
+ggplot(data=x) + 
+  geom_density(aes(x = v, fill=type, color=type))
+
+
+for (i in 1:(length(list_sample)-1)){
+    x <- as.numeric(unlist(list_sample[[i]]))
+    y <- as.numeric(unlist(list_sample[[i+1]]))
     print(wilcox.test(x,y, paired = TRUE))
-  }
 }
 
 warnings()
