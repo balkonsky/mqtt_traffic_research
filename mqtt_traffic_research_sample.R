@@ -27,16 +27,18 @@ for(i in 1:length(list_sample)){
 df_descriptive_statistics_sample <- as.data.frame(list_descriptive_statistics_sample)
 
 
-ggplot(df_sample,aes(x=df_sample[,5])) + 
-  geom_density(fill='white')
-
-
 x <- data.frame()
 for(i in 1:ncol(df_sample)){
 x <- rbind(x, data.frame(v=as.vector(unlist(list_sample[[i]])), type=paste0('day_',i)))
 }
 ggplot(data=x) + 
-  geom_density(aes(x = v, fill=type, color=type))
+  geom_density(aes(x = v, fill=type, color=type),alpha = 0.2, stat = "density", position = "identity")+
+  theme_bw() +
+  theme(plot.title=element_text(size = rel(1.6), face = "bold"),
+        legend.position = "bottom",
+        legend.background = element_rect(colour = "gray"),
+        legend.key = element_rect(fill = "gray90"),
+        axis.title = element_text(face = "bold", size = 13)) 
 
 
 for (i in 1:(length(list_sample)-1)){
@@ -45,4 +47,3 @@ for (i in 1:(length(list_sample)-1)){
     print(wilcox.test(x,y, paired = TRUE))
 }
 
-warnings()
